@@ -3,3 +3,4 @@ client/build
 functions/lib
 cli/dist
 cli/lib
+cli/src/secrets
