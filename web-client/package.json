@@ -8,9 +8,18 @@
 		"@testing-library/user-event": "^7.2.1",
 		"@types/react": "^16.9.34",
 		"@types/react-dom": "^16.9.6",
+		"@types/react-router": "^5.1.5",
+		"@types/react-router-dom": "^5.1.4",
+		"@types/styletron-engine-atomic": "^1.1.0",
+		"@types/styletron-react": "^5.0.2",
+		"baseui": "^9.72.0",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
-		"react-scripts": "3.4.1"
+		"react-router": "^6.0.0-alpha.3",
+		"react-router-dom": "^6.0.0-alpha.3",
+		"react-scripts": "3.4.1",
+		"styletron-engine-atomic": "^1.4.6",
+		"styletron-react": "^5.2.7"
 	},
 	"scripts": {
 		"start": "react-scripts start",
