@@ -3,3 +3,6 @@ client/build
 functions/lib
 cli/dist
 cli/lib
+cli/src/secrets
+.yo-repository
+cli/token.json
