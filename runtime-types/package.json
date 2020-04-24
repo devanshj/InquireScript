@@ -1,0 +1,10 @@
+{
+	"name": "@inquirescript/runtime-types",
+	"version": "0.0.1",
+	"description": "TypeScript definition for InquireScript",
+	"main": "index.js",
+	"scripts": {},
+	"dependencies": {},
+	"author": "InquireScript",
+	"license": "AGPL-3.0-or-later"
+}

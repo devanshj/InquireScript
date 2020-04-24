@@ -4,5 +4,8 @@ functions/lib
 cli/dist
 cli/lib
 cli/src/secrets
+<<<<<<< HEAD
 .yo-repository
 cli/token.json
+=======
+>>>>>>> 010f534fe368350a49fe4f499c0a10e48ed580f6
