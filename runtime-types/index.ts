@@ -1,131 +1,140 @@
 export type Main =
-	(runtime: Runtime) => string[] | undefined
+	(runtime: Runtime) => Promise<string[] | void>
 
 export type Runtime = 
-  { read:
-    { text: (props: ReadTextProps) => Promise<string>
-    , maskedText: (props: ReadMaskedTextProps) => Promise<string>
-    , number: (props: ReadNumberProps) => Promise<number>
-    , date: (props: ReadDateProps) => Promise<Date>
-    , dateRange: (props: ReadDateRangeProps) => Promise<[Date, Date]>
-    , choiceDropdown: <T>(props: ReadChoiceDropdownProps<T>) => Promise<T>
-    , choiceList: <T>(props: ReadChoiceListProps<T>) => Promise<T>
-    , starRating: (props: ReadStarRatingProps) => Promise<number>
-    , happinessRating: (props: ReadHappinessRatingProps) => Promise<number>
-    , checkbox: (props: ReadCheckboxProps) => Promise<boolean>
-    , orderableList: <T>(props: ReadOrderableListProps<T>) => Promise<T>
-    }
-  , write: 
-    { text: (props: WriteTextProps) => Promise<void>
-    , submitButton: (props?: WriteSubmitButtonProps) => Promise<boolean>
-    }
+  { readText: <T extends string>(props: ReadTextProps<T>) => Promise<T>
+  , readNumber: <T extends number>(props: ReadNumberProps<T>) => Promise<T>
+  , readDate: <T extends Date>(props: ReadDateProps<T>) => Promise<T>
+  , readDateRange: <T extends [Date, Date]>(props: ReadDateRangeProps<T>) => Promise<T>
+  , readChoiceDropdown: <T, U extends T>(props: ReadChoiceDropdownProps<T, U>) => Promise<U>
+  , readChoiceList: <T, U extends T>(props: ReadChoiceListProps<T, U>) => Promise<U>
+  , readStarRating: <T extends number>(props: ReadStarRatingProps<T>) => Promise<T>
+  , readHappinessRating: <T extends number>(props: ReadHappinessRatingProps<T>) => Promise<T>
+  , readCheckbox: <T extends boolean>(props: ReadCheckboxProps<T>) => Promise<T>
+  , writeText: (props: WriteTextProps) => Promise<void>
+  , writeSpace: (props: WriteSpaceProps) => Promise<void>
   }
 
-export type ReadTextProps =
+export type ReadTextProps<T extends string> =
   & { defaultValue?: string
-    , style?: "email" | "password"
+    , type?: "email" | "password"
     }
-  & CommonReadProps<string>
+  & CommonReadProps<string, T>
 
-export type ReadMaskedTextProps =
+export type ReadMaskedTextProps<T extends string> =
   & { defaultValue?: string
     , mask: string
     }
-  & CommonReadProps<string>
+  & CommonReadProps<string, T>
 
 
-export type ReadNumberProps =
-  & { defaultValue?: number
-    , min?: number
-    , max?: number
-    }
-  & CommonReadProps<string>
+export type ReadNumberProps<T extends number> =
+  & { defaultValue?: number }
+  & CommonReadProps<number, T>
 
-export type ReadDateProps =
+export type ReadDateProps<T extends Date> =
   & { defaultValue?: Date
     , min?: Date
     , max?: Date
     , hasTime?: boolean
     }
-  & CommonReadProps<string>
+  & CommonReadProps<Date, T>
 
-export type ReadDateRangeProps =
+export type ReadDateRangeProps<T extends [Date, Date]> =
   & { defaultValue?: Date
     , min?: Date
     , max?: Date
     , hasTimeStart?: boolean
     , hasTimeEnd?: boolean
-    , hasQuickSelect?: boolean
     }
-  & CommonReadProps<string>
+  & CommonReadProps<[Date, Date], T>
 
-export type ReadChoiceDropdownProps<T> = 
-  & { options: T[] | Promise<T[]>
+export type ReadChoiceDropdownProps<T, U extends T> = 
+  & { options: T[] // (todo feature) | Promise<T[]>
     , labelProvider: (option: T) => string
-    , isMultiselect?: boolean
+    , valueProvider: (option: T) => string
     , isSearchable?: boolean
     , defaultValue?: T 
     }
-  & CommonReadProps<T>
+  & CommonReadProps<T, U>
 
-export type ReadChoiceListProps<T> = 
-  & { options: T[] | Promise<T[]>
+export type ReadChoiceListProps<T, U extends T> = 
+  & { options: T[] // (todo feature) | Promise<T[]>
     , labelProvider: (option: T) => string
-    , isMultiselect?: boolean
-    , defaultValue?: T 
-    , isOtherable: boolean
+    , valueProvider: (option: T) => string
+    , defaultOption?: T
     }
-  & CommonReadProps<T>
+  & CommonReadProps<T, U>
 
-export type ReadStarRatingProps =
+export type ReadStarRatingProps<T extends number> =
   & { total?: number }
-  & CommonReadProps<number>
+  & CommonReadProps<number, T>
 
-export type ReadHappinessRatingProps =
+export type ReadHappinessRatingProps<T extends number> =
   & {}
-  & CommonReadProps<number>
+  & CommonReadProps<number, T>
 
-export type ReadCheckboxProps =
+export type ReadCheckboxProps<T extends boolean> =
   { defaultValue?: boolean
   }
-  & CommonReadProps<boolean>
+  & CommonReadProps<boolean, T>
 
-export type ReadOrderableListProps<T> = 
-  & { items: T[] | Promise<T[]>
-    , labelProvider: (option: T) => string
-    }
-  & CommonReadProps<T>
-
-export type ReadButtonProps<T> = 
-  & { items: T[] | Promise<T[]>
-    , labelProvider: (option: T) => string
-    }
-  & CommonReadProps<T>
-
-export type CommonReadProps<T> =
+export type CommonReadProps<T, U extends T> =
   { label: string
-  , labelExplanation?: string
+  , id: number | string
   , helpText?: string 
-  , validator?: (result: T) => boolean | Promise<boolean> }
+  , guard?:
+      { checker:
+          | ((result: T) => result is U)
+          | ((result: T) => boolean)
+      , errorProvider: (invalidResult: Exclude<T, U>) => string
+      }
+  }
 
 export type WriteTextProps =
   { content: string
+  , id: number | string
   , size?:
-    | "heading-1"
-    | "heading-2"
-    | "heading-3"
-    | "heading-4"
-    | "heading-5"
-    | "heading-6"
-    | "paragraph-1"
-    | "paragraph-2"
-    | "paragraph-3"
-    | "paragraph-4"
-    | "label-1"
-    | "label-2"
-    | "label-3"
-    | "label-4"
+    | "display-large"
+    | "display-medium"
+    | "display-small"
+    | "display-x-small"
+    | "heading-xx-large"
+    | "heading-x-large"
+    | "heading-large"
+    | "heading-medium"
+    | "heading-small"
+    | "heading-x-small"
+    | "label-large"
+    | "label-medium"
+    | "label-small"
+    | "label-x-small"
+    | "paragraph-large"
+    | "paragraph-medium"
+    | "paragraph-small"
+    | "paragraph-x-small"
   }
 
-export type WriteSubmitButtonProps = 
-  { text?: string }
+type WriteSpaceProps = 
+  { id: number | string
+  , size?:
+    | "scale0"
+    | "scale100"
+    | "scale200"
+    | "scale300"
+    | "scale400"
+    | "scale500"
+    | "scale550"
+    | "scale600"
+    | "scale700"
+    | "scale750"
+    | "scale800"
+    | "scale900"
+    | "scale1000"
+    | "scale1200"
+    | "scale1400"
+    | "scale1600"
+    | "scale2400"
+    | "scale3200"
+    | "scale4800"
+  }
