@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { View } from ".";
-import { Runtime } from "@inquirescript/runtime-types"
+import { Ui } from "@inquirescript/runtime-types"
 
 import {
     DisplayLarge,
@@ -60,9 +60,9 @@ const ReadTextUi = ({ view, onStateValue }: {
     let { request: { props }, state: { value, validity } } = view;
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Input
                 value={value || view.request.props.defaultValue || ""}
                 onChange={e => onStateValue(e.currentTarget.value)}
@@ -80,9 +80,9 @@ const ReadNumberUi = ({ view, onStateValue }: {
     let [internalValue, setInternalValue] = useState(value || props.defaultValue || "")
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Input
                 value={internalValue}
                 onChange={e => {
@@ -104,16 +104,14 @@ const ReadDateUi = ({ view, onStateValue }: {
     let { request: { props }, state: { value, validity } } = view;
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Datepicker
                 value={value || props.defaultValue}
                 onChange={(({ date }: { date: null | Date }) => {
                     onStateValue(date === null ? undefined : date)
                 }) as any}
-                minDate={props.min}
-                maxDate={props.max}
                 timeSelectStart={props.hasTime}
                 onClose={() => setIsDirty(true)} /> 
     </FormControl>
@@ -128,9 +126,9 @@ const ReadDateRangeUi = ({ view, onStateValue }: {
     let [internalValue, setInternalValue] = useState(value || props.defaultValue as any)
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Datepicker
                 value={internalValue}
                 onChange={({ date }) => {
@@ -145,8 +143,6 @@ const ReadDateRangeUi = ({ view, onStateValue }: {
                         onStateValue(_internalValue as any)
                     }
                 }}
-                minDate={props.min}
-                maxDate={props.max}
                 timeSelectStart={props.hasTimeStart}
                 timeSelectEnd={props.hasTimeEnd}
                 onClose={() => setIsDirty(true)} /> 
@@ -162,22 +158,35 @@ const ReadChoiceDropdownUi = ({ view, onStateValue }: {
     let { request: { props }, state: { value, validity } } = view;
     let [internalValue, setInternalValue] = useState(value || props.defaultValue as any)
 
+    let [valueProvider, labelProvider] =
+        (props.options as any[]).every(o => typeof o === "string")
+            ? [(o: any) => o, (o: any) => o]
+            : [assertiveGet(props, "valueProvider"), assertiveGet(props, "labelProvider")]
+
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Select
-                options={props.options.map(option =>
+                options={(props.options as any[]).map(option =>
                     ({
-                        label: props.labelProvider(option),
-                        id: props.valueProvider(option)
+                        label: labelProvider(option),
+                        id: valueProvider(option)
                     })
                 )}
                 value={internalValue}
-                onChange={({ value }) => {
+                onChange={({ value: selectedOptions }) => {
                     setInternalValue(value)
                     onStateValue(
-                        props.options.find(option => props.valueProvider(option) === value[0].id)
+                        props.isMultiple
+                            ? selectedOptions.map(o =>
+                                props.options.find(option =>
+                                    valueProvider(option) === o.id
+                                )
+                            ) as any
+                            : props.options.find(option =>
+                                valueProvider(option) === selectedOptions[0].id
+                            ) as any
                     )
                 }}
                 searchable={false}
@@ -194,31 +203,68 @@ const ReadChoiceListUi = ({ view, onStateValue }: {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props, id }, state: { value, validity } } = view;
 
+    let [valueProvider, labelProvider] =
+        (props.options as any[]).every(o => typeof o === "string")
+            ? [(o: any) => o, (o: any) => o]
+            : [assertiveGet(props, "valueProvider"), assertiveGet(props, "labelProvider")]
+
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
-            <RadioGroup
-                value={props.valueProvider(value || props.defaultOption)}
-                onChange={e =>
-                    onStateValue(
-                        props.options.find(option =>
-                            props.valueProvider(option) === e.currentTarget.value
+        error={!validity.isValid && isDirty ? validity.reason : undefined}>
+            {!props.isMultiple
+                ? <RadioGroup
+                    value={valueProvider(value || props.defaultValue)}
+                    onChange={e =>
+                        onStateValue(
+                            (props.options as any[]).find(option =>
+                                valueProvider(option) === e.currentTarget.value
+                            )
                         )
-                    )
-                }
-                onBlur={() => setIsDirty(true)}
-                name={id.toString()}
-                align={ALIGN.vertical}>
-                    {props.options.map(option =>
-                        <Radio value={props.valueProvider(option)} key={props.valueProvider(option)}>
-                            {props.labelProvider(option)}
-                        </Radio>
+                    }
+                    onBlur={() => setIsDirty(true)}
+                    name={id.toString()}
+                    align={ALIGN.vertical}>
+                        {(props.options as any[]).map(option =>
+                            <Radio value={valueProvider(option)} key={valueProvider(option)}>
+                                {labelProvider(option)}
+                            </Radio>
+                        )}
+                </RadioGroup>
+                : <Block flexDirection="column">
+                    {(props.options as any[]).map(option =>
+                        <Checkbox
+                            key={valueProvider(option)}
+                            checked={value === undefined ? false : (value as string[]).includes(valueProvider(option))}
+                            onChange={e => onStateValue(
+                                [...((value || []) as string[]).flatMap(o =>
+                                    o === valueProvider(option)
+                                        ? e.currentTarget.checked
+                                            ? [o]
+                                            : []
+                                        : [o]
+                                ), ...(e.currentTarget.checked ? [valueProvider(option)] : [])]
+                            )}
+                            overrides={{
+                                Root: {
+                                    style: ({ $theme }) => ({
+                                        marginTop: $theme.sizing.scale200,
+                                        marginBottom: $theme.sizing.scale200
+                                    })
+                                }
+                            }}>
+                                {labelProvider(option)}
+                        </Checkbox>
                     )}
-            </RadioGroup>
+                </Block>
+            }
     </FormControl>
 }
 
+const isStringArray = (xs: unknown[]): xs is string[] =>
+    xs.every(x => typeof x === "string")
+
+const assertiveGet = (x: unknown, k: string) => (x as any)[k]
 
 const ReadStarRatingUi = ({ view, onStateValue }: {
     view: View.FromType<"readStarRating">,
@@ -228,9 +274,9 @@ const ReadStarRatingUi = ({ view, onStateValue }: {
     let { request: { props }, state: { value, validity } } = view;
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <StarRating
                 value={value}
                 onChange={({ value }) => {
@@ -250,9 +296,9 @@ const ReadHappinessRatingUi = ({ view, onStateValue }: {
     let { request: { props }, state: { value, validity } } = view;
 
     return <FormControl
-        label={props.label}
+        label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <EmoticonRating
                 value={value}
                 onChange={({ value }) => {
@@ -272,7 +318,7 @@ const ReadCheckboxUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : false}>
+        error={!validity.isValid && isDirty ? validity.reason : null}>
             <Checkbox
                 checked={value || props.defaultValue}
                 onChange={e => onStateValue(e.currentTarget.checked)}
@@ -310,5 +356,5 @@ const WriteSpaceUi = ({ view }: { view: View.FromType<"writeSpace"> }) =>
     <Block height={view.request.props.size || "scale300"} />
 
 
-const isViewOfType = <T extends keyof Runtime>(view: View.Any, type: T): view is View.FromType<T> =>
+const isViewOfType = <T extends keyof Ui>(view: View.Any, type: T): view is View.FromType<T> =>
 	view.request.type === type

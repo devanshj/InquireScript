@@ -1,97 +1,186 @@
-export type Main =
-	(runtime: Runtime) => Promise<string[] | void>
+export interface Main
+	{ (runtime: Runtime): Promise<string[] | void> }
 
-export type Runtime = 
-  { readText: <T extends string>(props: ReadTextProps<T>) => Promise<T>
-  , readNumber: <T extends number>(props: ReadNumberProps<T>) => Promise<T>
-  , readDate: <T extends Date>(props: ReadDateProps<T>) => Promise<T>
-  , readDateRange: <T extends [Date, Date]>(props: ReadDateRangeProps<T>) => Promise<T>
-  , readChoiceDropdown: <T, U extends T>(props: ReadChoiceDropdownProps<T, U>) => Promise<U>
-  , readChoiceList: <T, U extends T>(props: ReadChoiceListProps<T, U>) => Promise<U>
-  , readStarRating: <T extends number>(props: ReadStarRatingProps<T>) => Promise<T>
-  , readHappinessRating: <T extends number>(props: ReadHappinessRatingProps<T>) => Promise<T>
-  , readCheckbox: <T extends boolean>(props: ReadCheckboxProps<T>) => Promise<T>
-  , writeText: (props: WriteTextProps) => Promise<void>
-  , writeSpace: (props: WriteSpaceProps) => Promise<void>
+export interface Runtime
+  { ui: Ui, guard: GuardHelper }
+
+export interface Ui 
+  { readText: ReadText
+  , readNumber: ReadNumber
+  , readDate: ReadDate
+  , readDateRange: ReadDateRange
+  , readChoiceDropdown: ReadChoiceDropdown
+  , readChoiceList: ReadChoiceList
+  , readStarRating: ReadStarRating
+  , readHappinessRating: ReadHappinessRating
+  , readCheckbox: ReadCheckbox
+  , writeText: WriteText
+  , writeSpace: WriteSpace
   }
 
-export type ReadTextProps<T extends string> =
-  & { defaultValue?: string
-    , type?: "email" | "password"
-    }
-  & CommonReadProps<string, T>
 
-export type ReadMaskedTextProps<T extends string> =
-  & { defaultValue?: string
-    , mask: string
-    }
-  & CommonReadProps<string, T>
+// -----------------------
 
+export interface ReadText
+  { <T extends string | undefined>(props: ReadTextProps<T>): Promise<T>}
 
-export type ReadNumberProps<T extends number> =
-  & { defaultValue?: number }
-  & CommonReadProps<number, T>
-
-export type ReadDateProps<T extends Date> =
-  & { defaultValue?: Date
-    , min?: Date
-    , max?: Date
-    , hasTime?: boolean
-    }
-  & CommonReadProps<Date, T>
-
-export type ReadDateRangeProps<T extends [Date, Date]> =
-  & { defaultValue?: Date
-    , min?: Date
-    , max?: Date
-    , hasTimeStart?: boolean
-    , hasTimeEnd?: boolean
-    }
-  & CommonReadProps<[Date, Date], T>
-
-export type ReadChoiceDropdownProps<T, U extends T> = 
-  & { options: T[] // (todo feature) | Promise<T[]>
-    , labelProvider: (option: T) => string
-    , valueProvider: (option: T) => string
-    , isSearchable?: boolean
-    , defaultValue?: T 
-    }
-  & CommonReadProps<T, U>
-
-export type ReadChoiceListProps<T, U extends T> = 
-  & { options: T[] // (todo feature) | Promise<T[]>
-    , labelProvider: (option: T) => string
-    , valueProvider: (option: T) => string
-    , defaultOption?: T
-    }
-  & CommonReadProps<T, U>
-
-export type ReadStarRatingProps<T extends number> =
-  & { total?: number }
-  & CommonReadProps<number, T>
-
-export type ReadHappinessRatingProps<T extends number> =
-  & {}
-  & CommonReadProps<number, T>
-
-export type ReadCheckboxProps<T extends boolean> =
-  { defaultValue?: boolean
+export interface ReadTextProps<T extends string | undefined> extends CommonReadProps<T, string | undefined>
+  { defaultValue?: string
+  , type?: "email" | "password"
   }
-  & CommonReadProps<boolean, T>
+  
 
-export type CommonReadProps<T, U extends T> =
+// -----------------------
+
+export interface ReadNumber
+  { <T extends number | undefined>(props: ReadNumberProps<T>): Promise<T>
+  }
+
+export interface ReadNumberProps<T extends number | undefined> extends CommonReadProps<T, number | undefined>
+  { defaultValue?: number }
+
+
+// -----------------------
+
+export interface ReadDate
+  { <T extends Date | undefined>(props: ReadDateProps<T>): Promise<T> }
+
+export interface ReadDateProps<T extends Date | undefined> extends CommonReadProps<T, Date | undefined>
+  { defaultValue?: Date
+  , hasTime?: boolean
+  }
+
+// -----------------------
+
+export interface ReadDateRange
+  { <T extends [Date, Date] | undefined>(props: ReadDateRangeProps<T>): Promise<T>
+  }
+
+export interface ReadDateRangeProps<T extends [Date, Date] | undefined> extends CommonReadProps<T, [Date, Date] | undefined>
+  { defaultValue?: Date
+  , hasTimeStart?: boolean
+  , hasTimeEnd?: boolean
+  , isRange: true
+  }
+
+
+// -----------------------
+
+export interface ReadChoiceDropdown
+  { <T extends F | undefined, F>(props: ReadChoiceDropdownGenericProps<T, F>): Promise<T>
+    <T extends string | undefined>(props: ReadChoiceDropdownStringProps<T>): Promise<T>
+    <T extends F[] | undefined, F>(props: ReadChoiceDropdownGenericMultipleProps<T, F>): Promise<T>
+    <T extends string[] | undefined>(props: ReadChoiceDropdownStringMultipleProps<T>): Promise<T>
+  }
+
+
+export interface ReadChoiceDropdownGenericProps<T extends F | undefined, F> extends ReadChoiceListGenericProps<T, F>
+  { isSearchable?: boolean }
+
+export interface ReadChoiceDropdownStringProps<T extends string | undefined> extends ReadChoiceListStringProps<T>
+  { isSearchable?: boolean }
+
+export interface ReadChoiceDropdownGenericMultipleProps<T extends F[] | undefined, F> extends ReadChoiceListGenericMultipleProps<T, F>
+  { isSearchable?: boolean }
+
+export interface ReadChoiceDropdownStringMultipleProps<T extends string[] | undefined>extends ReadChoiceListStringMultipleProps<T>
+  { isSearchable?: boolean }
+
+
+// -----------------------
+
+export interface ReadChoiceList
+  { <T extends F | undefined, F>(props: ReadChoiceListGenericProps<T, F>): Promise<T>
+    <T extends string | undefined>(props: ReadChoiceListStringProps<T>): Promise<T>
+    <T extends F[] | undefined, F>(props: ReadChoiceListGenericMultipleProps<T, F>): Promise<T>
+    <T extends string[] | undefined>(props: ReadChoiceListStringMultipleProps<T>): Promise<T>
+  }
+
+export interface ReadChoiceListGenericProps<T extends F | undefined, F> extends CommonReadProps<T, F | undefined>
+  { options: F[]
+  , valueProvider: (option: T) => string
+  , labelProvider: (option: T) => string
+  , defaultValue?: string
+  , isMultiple?: false
+  }
+
+export interface ReadChoiceListStringProps<T extends string | undefined> extends CommonReadProps<T, string | undefined>
+  { options: string[]
+  , defaultValue?: string
+  , isMultiple?: false
+  }
+
+export interface ReadChoiceListGenericMultipleProps<T extends F[] | undefined, F> extends CommonReadProps<T, F[] | undefined>
+  { options: F[]
+  , valueProvider: (option: T) => string
+  , labelProvider: (option: T) => string
+  , defaultValue?: string
+  , isMultiple?: true
+  }
+
+
+export interface ReadChoiceListStringMultipleProps<T extends string[] | undefined> extends CommonReadProps<T, string[] | undefined>
+  { options: string[]
+  , defaultValue?: string
+  , isMultiple?: true
+  }
+
+
+
+
+// -----------------------
+
+export interface ReadStarRating
+  { <T extends number>(props: ReadStarRatingProps<T>): Promise<T> }
+
+export interface ReadStarRatingProps<T extends number | undefined> extends CommonReadProps<T, number | undefined> 
+  { total?: number
+  , defaultValue?: number }
+
+
+
+
+// -----------------------
+
+export interface ReadHappinessRating
+  { <T extends number>(props: ReadHappinessRatingProps<T>): Promise<T> }
+
+export interface ReadHappinessRatingProps<T extends number | undefined> extends CommonReadProps<T, number | undefined> 
+  {}
+
+
+// -----------------------
+
+export interface ReadCheckbox
+  { <T extends boolean>(props: ReadCheckboxProps<T>): Promise<T> }
+
+export interface ReadCheckboxProps<T extends boolean> extends CommonReadProps<T, boolean> 
+  { defaultValue?: boolean }
+
+
+// -----------------------
+
+export interface CommonReadProps<T extends U, U>
   { label: string
   , id: number | string
-  , helpText?: string 
-  , guard?:
-      { checker:
-          | ((result: T) => result is U)
-          | ((result: T) => boolean)
-      , errorProvider: (invalidResult: Exclude<T, U>) => string
-      }
+  , helpText?: string
+  , guard?: 
+    { checker:
+        | ((result: U) => result is T)
+        | ((result: U) => boolean)
+    , errorProvider: (invalidResult: Exclude<U, T>) => string
+    }
   }
 
-export type WriteTextProps =
+
+
+
+// -----------------------
+
+export interface WriteText
+  { (props: WriteTextProps): Promise<void> }
+
+export interface WriteTextProps
   { content: string
   , id: number | string
   , size?:
@@ -115,7 +204,13 @@ export type WriteTextProps =
     | "paragraph-x-small"
   }
 
-type WriteSpaceProps = 
+
+// -----------------------
+
+export interface WriteSpace
+  { (props: WriteSpaceProps): Promise<void> }
+
+export interface WriteSpaceProps
   { id: number | string
   , size?:
     | "scale0"
@@ -137,4 +232,46 @@ type WriteSpaceProps =
     | "scale2400"
     | "scale3200"
     | "scale4800"
+  }
+
+
+export interface GuardHelper
+  { required: <T>(label: string) =>
+      { checker:
+          | ((result: T | undefined) => result is T)
+          | ((result: T | undefined) => boolean)
+      , errorProvider: (invalidResult: undefined) => string
+      }
+  , pipe: GuardPipe
+  }
+
+export interface GuardPipe
+  { <T0, T1 extends T0>
+      ( g0: Guard<T0, T1>
+      ): Guard<T0, T1>
+
+    <T0, T1 extends T0, T2 extends T1>
+      ( g0: Guard<T0, T1>
+      , g1: Guard<T1, T2>
+      ): Guard<T0, T2>
+
+    <T0, T1 extends T0, T2 extends T1, T3 extends T2>
+      ( g0: Guard<T0, T1>
+      , g1: Guard<T1, T2>
+      , g2: Guard<T2, T3>
+      ): Guard<T0, T3>
+    
+    <T0, T1 extends T0, T2 extends T1, T3 extends T2, T4 extends T3>
+      ( g0: Guard<T0, T1>
+      , g1: Guard<T1, T2>
+      , g2: Guard<T2, T3>
+      , g3: Guard<T3, T4>
+      ): Guard<T0, T4>
+  }
+
+interface Guard<T, U extends T>
+  { checker:
+    | ((result: T) => result is U)
+    | ((result: T) => boolean)
+  , errorProvider: (invalidResult: undefined) => string
   }
