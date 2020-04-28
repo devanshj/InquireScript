@@ -2,11 +2,18 @@
 	"name": "@inquirescript/cli",
 	"description": "InquireScript CLI",
 	"version": "0.0.1",
-	"bin": { "inquirescript": "./bin/run" },
+	"bin": {
+		"inquirescript": "./bin/run"
+	},
 	"dependencies": {
 		"@oclif/command": "^1.5.20",
 		"@oclif/config": "^1.15.1",
+		"@oclif/plugin-commands": "^1.2.3",
 		"@oclif/plugin-help": "^2.2.3",
+		"@types/keytar": "^4.4.2",
+		"cli-ux": "^5.4.5",
+		"firebase": "^7.14.2",
+		"googleapis": "^39.2.0",
 		"tslib": "^1.11.1"
 	},
 	"devDependencies": {
@@ -31,7 +38,13 @@
 	"oclif": {
 		"commands": "./lib/commands",
 		"bin": "inquirescript",
-		"plugins": ["@oclif/plugin-help"]
+		"plugins": [
+			"@oclif/plugin-help",
+			"@oclif/plugin-commands"
+		],
+		"topics": {
+			"inquiry": { "description": "" }
+		}
 	},
 	"scripts": {
 		"postpack": "rimraf oclif.manifest.json",
