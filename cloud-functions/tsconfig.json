@@ -5,7 +5,8 @@
 		"sourceMap": true,
 		"strict": true,
 		"noImplicitAny": true,
-		"target": "es2017"
+		"target": "es2017",
+		"skipLibCheck": true
 	},
 	"compileOnSave": true,
 	"include": [

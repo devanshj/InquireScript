@@ -1,6 +1,9 @@
 node_modules
-client/build
-functions/lib
 cli/dist
 cli/lib
 cli/src/secrets
+web-client/build
+web-client/src/secrets
+cloud-functionsfunctions/lib
+cloud-functions/src/secrets
+
