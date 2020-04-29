@@ -3,7 +3,7 @@ import { google, } from "googleapis"
 import googleApiCredentials from "../secrets/googleApiCredentials.json"
 import {} from "googleapis/build/src/"
 import { cli } from "cli-ux";
-import { initFirebase, getUser } from '../api';
+import { initFirebase, getUser } from '../firebase-helpers';
 import keytar from "keytar";
 import { KEYTAR_SERVICE, KEYTAR_ACCOUNT } from '../constants';
 

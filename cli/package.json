@@ -6,10 +6,12 @@
 		"inquirescript": "./bin/run"
 	},
 	"dependencies": {
+		"@babel/core": "^7.9.0",
 		"@oclif/command": "^1.5.20",
 		"@oclif/config": "^1.15.1",
 		"@oclif/plugin-commands": "^1.2.3",
 		"@oclif/plugin-help": "^2.2.3",
+		"@types/babel__core": "^7.1.7",
 		"@types/keytar": "^4.4.2",
 		"cli-ux": "^5.4.5",
 		"firebase": "^7.14.2",
@@ -43,7 +45,9 @@
 			"@oclif/plugin-commands"
 		],
 		"topics": {
-			"inquiry": { "description": "" }
+			"inquiry": {
+				"description": ""
+			}
 		}
 	},
 	"scripts": {
