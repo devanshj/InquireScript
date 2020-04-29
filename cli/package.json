@@ -13,6 +13,7 @@
 		"@oclif/plugin-help": "^2.2.3",
 		"@types/babel__core": "^7.1.7",
 		"@types/keytar": "^4.4.2",
+		"chokidar": "3",
 		"cli-ux": "^5.4.5",
 		"firebase": "^7.14.2",
 		"googleapis": "^39.2.0",

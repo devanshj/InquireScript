@@ -2,6 +2,7 @@ import Command from "@oclif/command";
 import { initFirebase, getUser, getDocument, putDocument } from "../../firebase-helpers"
 import { promises as fs } from "fs"
 import { toInquiryCode } from '../../code-transforms';
+import chokidar from "chokidar"
 
 export class InquiryDeploy extends Command {
 	static description = "deploy your script"
@@ -12,15 +13,13 @@ export class InquiryDeploy extends Command {
 		description: "identifier for inquiry"
 	}, {
 		name: "path-to-script",
-		required: true,
+		required: false,
 		description: "path to the script to be deployed"
 	}]
 
 	async run() {
-		let { args: {
-			identifier,
-			["path-to-script"]: path
-		} } = this.parse(InquiryDeploy)
+		let { identifier, ["path-to-script"]: path } = this.parse(InquiryDeploy).args
+		path = path || identifier + ".js"
 
 		initFirebase();
 		let user = await getUser();
@@ -46,12 +45,22 @@ export class InquiryDeploy extends Command {
 			return;
 		}
 
-		await putDocument("inquiry", { inquiryId: identifier }, {
-			author: user.uid,
-			code: await toInquiryCode(await fs.readFile(path, "utf8"))
+		const deploy = async () => {
+			await putDocument("inquiry", { inquiryId: identifier }, {
+				author: user!.uid,
+				code: await toInquiryCode(await fs.readFile(path, "utf8"))
+			})
+			
+			this.log("deployed")
+		}
+
+		await deploy();
+		this.log("watching for changes...")
+
+		chokidar.watch(path)
+		.on("change", () => {
+			this.log("change detected, deploying...")
+			deploy()
 		})
-		
-		this.log(`deployed ${identifier}`)
-		this.exit();
 	}
 }
