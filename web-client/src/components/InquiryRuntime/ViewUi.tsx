@@ -261,9 +261,6 @@ const ReadChoiceListUi = ({ view, onStateValue }: {
     </FormControl>
 }
 
-const isStringArray = (xs: unknown[]): xs is string[] =>
-    xs.every(x => typeof x === "string")
-
 const assertiveGet = (x: unknown, k: string) => (x as any)[k]
 
 const ReadStarRatingUi = ({ view, onStateValue }: {

@@ -6,16 +6,21 @@ import { Block } from "baseui/block";
 import { useStyletron } from "baseui";
 import { Button } from "baseui/button"
 import { SIZE } from "baseui/input";
+import { LabelMedium } from "baseui/typography";
+import firebase from "firebase/app"
 
-const InquiryRuntime = ({ main }: { main: Main }) => {
+const InquiryRuntime = ({ main, onResponse, responseStatus }: {
+	main: Main,
+	onResponse: (r: string[]) => void,
+	responseStatus: "UNSUBMITTED" | "SUBMITING" | "SUBMITTED"
+}) => {
 	let [execState, setExecState] = useState({ status: "SUSPENDED", views: [] } as ExecState)
 	
 	const onViewStateValue = <V extends View.Stateful>(view: V, value: V["state"]["value"]) => {
 		let views = [...execState.views]
 		views.splice(
 			views.findIndex(v => v.request.id === view.request.id),
-			1,
-			{ ...view, state: { ...view.state, value } }
+			1, { ...view, state: { ...view.state, value } }
 		)
 		setExecState({ ...execState, views })
 
@@ -25,6 +30,7 @@ const InquiryRuntime = ({ main }: { main: Main }) => {
 	useEffect(() => {
 		exec([], main).then(setExecState)
 	}, [main])
+
 
 	let [, theme] = useStyletron();
 
@@ -44,7 +50,19 @@ const InquiryRuntime = ({ main }: { main: Main }) => {
 			)}
 			{execState.status === "COMPLETE" && execState.response !== undefined && <>
 				<Block height={theme.sizing.scale1600}/>
-				<Button size={SIZE.large}>Submit</Button>
+				{responseStatus === "UNSUBMITTED" || responseStatus === "SUBMITING" ?
+					<Button
+						onClick={() => {
+							if (execState.status !== "COMPLETE" || execState.response === undefined) return;
+							onResponse(execState.response)
+						}}
+						size={SIZE.large}
+						isLoading={responseStatus === "SUBMITING"}>
+							Submit
+					</Button> :
+				responseStatus === "SUBMITTED" ?
+					<LabelMedium>Submitted your response</LabelMedium> :
+				null}
 			</>}
 	</Block>;
 }

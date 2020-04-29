@@ -1,69 +1,55 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import InquiryRuntime from "./InquiryRuntime";
+import { Main } from "@inquirescript/runtime-types"
+import firebase from "firebase"
+import { HeadingSmall, LabelMedium, ParagraphMedium } from "baseui/typography";
+import { Block } from "baseui/block";
 
 const Inquiry = () => { 
-    let { identifier } = useParams<{ identifier: string }>()
-    
-    return <InquiryRuntime main={async ({ ui, guard }) => {
-        await ui.writeText({
-            id: 0,
-            content: "Hi teenagers we want your help!",
-            size: "display-small"
+    let { inquiryId } = useParams<{ inquiryId: string }>()
+    let [main, setMain] = useState(() => null as Main | null)
+    let [status, setStatus] = useState("DEFAULT" as "DEFAULT" | "INQUIRY_NOT_FOUND")
+    let [responseStatus, setResponseStatus] = useState("UNSUBMITTED" as "UNSUBMITTED" | "SUBMITING" | "SUBMITTED")
+
+    useEffect(() => {
+        let isUnsubscribed = false
+        let unsubscribe = firebase.firestore().doc(`/inquiries/${inquiryId}`).onSnapshot(async ref => {
+            let inquiry = await ref.data()
+            if (isUnsubscribed) return;
+            if (!inquiry) {
+                setStatus("INQUIRY_NOT_FOUND")
+                return;
+            } else {
+                setMain(() => new Function("return " + inquiry!.code)() as Main)
+            }
         })
-    
-        await ui.writeSpace({
-            id: 1,
-            size: "scale1000"
-        })
-    
-        let age = await ui.readNumber({
-            id: 2,
-            label: `What is your age?`,
-            guard: guard.pipe(
-                guard.required("age"),
-                { checker: age => Number(age.toFixed(0)) === age
-                , errorProvider: () => "Age can't be in decimal"
-                }
-            )
-        })
-    
-    
-        if (age < 13) {
-            await ui.writeText({
-                id: 4,
-                content: `Hehe, you're ${age} which makes you a little ${age < 10 ? "too" : ""} young to be a teenager!`,
-                size: "paragraph-medium"
-            })
-            return;
+        return () => {
+            unsubscribe()
+            isUnsubscribed = true;
         }
+    }, [inquiryId])
+
+    const onResponse = (response: string[]) => {
+        setResponseStatus("SUBMITING")
+        firebase.functions().httpsCallable("insertResponse")({
+            inquiryId,
+            response
+        }).then(() => {
+            setResponseStatus("SUBMITTED")
+        }) // TODO: catch
+    }
     
-        if (age > 18) {
-            await ui.writeText({
-                id: 5,
-                content: `Heya, you're ${age} which makes you a little ${age > 21 ? "too" : ""} old to be a teenager!`,
-                size: "paragraph-medium"
-            })
-            return;
-        }
-    
-        let name = await ui.readText({
-            id: 7,
-            label:  "What's your name?",
-            helpText: "Hey, be honest no bogus names!",
-            guard: guard.required("name")
-        })
-    
-        let hobby = await ui.readText({
-            id: 9,
-            label: `Hi ${name}, What's your hobby?`,
-            helpText: "You can keep it blank if you don't really have one it's okay",
-            guard: guard.required("hobby")
-        })
-    
-        return [name, age.toString(), hobby]
-    
-    }} />
+    return <>{
+        status === "DEFAULT" && main 
+            ? <InquiryRuntime main={main} onResponse={onResponse} responseStatus={responseStatus} /> :
+        status === "INQUIRY_NOT_FOUND"
+            ? <Block padding="scale800">
+                <HeadingSmall>Inquiry not found</HeadingSmall>
+                <ParagraphMedium>You probably you made some typo in url</ParagraphMedium>
+            </Block> :
+        null
+    }</>
 }
 
 export default Inquiry;
