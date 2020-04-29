@@ -17,22 +17,25 @@ export const getUser = async () => {
         let credentials = JSON.parse(await keytar.findPassword(KEYTAR_SERVICE) || "null")  as GoogleAuthCredentials | null
         if (!credentials) return null;
 
-        await firebase.auth().signInWithCredential(
-            firebase.auth.GoogleAuthProvider.credential(
-                credentials.id_token,
-                credentials.access_token
-            )
-        )
-
         let authClient = new google.auth.OAuth2(
             googleApiCredentials.client_id,
             googleApiCredentials.client_secret,
             googleApiCredentials.redirect_uris[0]
         )
         authClient.setCredentials(credentials)
-        authClient.on("tokens", async credentials => {
-            await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, JSON.stringify(credentials))
-        })
+
+        let { token: newAccessToken } = await authClient.getAccessToken()
+        await firebase.auth().signInWithCredential(
+            firebase.auth.GoogleAuthProvider.credential(
+                credentials.id_token,
+                newAccessToken
+            )
+        )
+        
+        await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, JSON.stringify({
+            ...credentials,
+            access_token: newAccessToken
+        }))
         
 
         return firebase.auth().currentUser as Omit<firebase.User, "uid"> & { uid: AuthUid }
