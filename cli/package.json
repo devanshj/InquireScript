@@ -36,6 +36,11 @@
 		"/npm-shrinkwrap.json",
 		"/oclif.manifest.json"
 	],
+	"author": "Devansh Jethmalani",
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/devanshj/InquireScript.git"
+	},
 	"license": "AGPL-3.0-or-later",
 	"main": "lib/index.js",
 	"oclif": {
