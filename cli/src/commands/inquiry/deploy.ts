@@ -1,5 +1,5 @@
 import Command from "@oclif/command";
-import { initFirebase, getUser, getDocument, putDocument } from "../../firebase-helpers"
+import { initFirebase, getCurrentUser, getDocument, putDocument } from "../../firebase-helpers"
 import { promises as fs } from "fs"
 import { toInquiryCode } from '../../code-transforms';
 import chokidar from "chokidar"
@@ -22,7 +22,7 @@ export class InquiryDeploy extends Command {
 		path = path || identifier + ".js"
 
 		initFirebase();
-		let user = await getUser();
+		let user = await getCurrentUser();
 		if (!user) {
 			this.log(`You're not logged in use "inquirescript login" to login`)
 			return;

@@ -2,8 +2,8 @@ import Command from "@oclif/command";
 import { google, } from "googleapis"
 import googleApiCredentials from "../secrets/googleApiCredentials.json"
 import {} from "googleapis/build/src/"
-import { cli, ux } from "cli-ux";
-import { initFirebase, getUser } from '../firebase-helpers';
+import { cli } from "cli-ux";
+import { initFirebase, getCurrentUser } from '../firebase-helpers';
 import keytar from "keytar";
 import { KEYTAR_SERVICE, KEYTAR_ACCOUNT } from '../constants';
 
@@ -14,7 +14,7 @@ export class Login extends Command {
         initFirebase();
 
 
-        let user = await getUser();
+        let user = await getCurrentUser();
         if (user) {
             this.log(`Hi ${user.displayName}, you're already logged in!`)
             return;
@@ -41,7 +41,7 @@ export class Login extends Command {
         let { tokens: credentials } = await authClient.getToken(authCode)
         await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, JSON.stringify(credentials))
         
-        user = (await getUser())!
+        user = (await getCurrentUser())!
         this.log(`Hi ${user.displayName}, you're now logged in!`)
     }
 }
