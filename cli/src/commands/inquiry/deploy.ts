@@ -65,7 +65,7 @@ export class InquiryDeploy extends Command {
 
 		cli.action.start("deploying")
 		await deploy();
-		cli.action.stop(`deployed to https://inquirescript.firebase.app/inquiry/${identifier}`)
+		cli.action.stop(`deployed to https://inquirescript.web.app/inquiry/${identifier}`)
 		cli.action.start("watching for changes")
 
 		let watcher = chokidar.watch(path)
