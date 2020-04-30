@@ -9,7 +9,7 @@ service cloud.firestore {
 			match /responses/{responseId} {
 				allow create: if false;
 				allow read, update, delete:
-					if request.auth.id == get(/databases/$(database)/document/inquiries/$(inquiryId)).data.author
+					if request.auth.uid == get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.author
 			}
 		}
 	}
