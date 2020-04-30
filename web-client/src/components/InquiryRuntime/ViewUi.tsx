@@ -32,19 +32,20 @@ import { StarRating, EmoticonRating } from "baseui/rating"
 import { Checkbox } from "baseui/checkbox"
 
 
-const ViewUi = ({ view, onStateValue }: {
+const ViewUi = ({ view, onStateValue, isDisabled }: {
     view: View.Any,
-    onStateValue: (value: View.Stateful["state"]["value"]) => void
+    onStateValue: (value: View.Stateful["state"]["value"]) => void,
+    isDisabled: boolean
 }) => (
-    isViewOfType(view, "readText") ? <ReadTextUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readNumber") ? <ReadNumberUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readDate") ? <ReadDateUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readDateRange") ? <ReadDateRangeUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readChoiceDropdown") ? <ReadChoiceDropdownUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readChoiceList") ? <ReadChoiceListUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readStarRating") ? <ReadStarRatingUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readHappinessRating") ? <ReadHappinessRatingUi view={view} onStateValue={onStateValue} /> :
-    isViewOfType(view, "readCheckbox") ? <ReadCheckboxUi view={view} onStateValue={onStateValue} /> :
+    isViewOfType(view, "readText") ? <ReadTextUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readNumber") ? <ReadNumberUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readDate") ? <ReadDateUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readDateRange") ? <ReadDateRangeUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readChoiceDropdown") ? <ReadChoiceDropdownUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readChoiceList") ? <ReadChoiceListUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readStarRating") ? <ReadStarRatingUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readHappinessRating") ? <ReadHappinessRatingUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
+    isViewOfType(view, "readCheckbox") ? <ReadCheckboxUi view={view} onStateValue={onStateValue} isDisabled={isDisabled}/> :
     isViewOfType(view, "writeText") ? <WriteTextUi view={view} /> :
     isViewOfType(view, "writeSpace") ? <WriteSpaceUi view={view} /> :
     <></>
@@ -52,9 +53,10 @@ const ViewUi = ({ view, onStateValue }: {
 
 export default ViewUi;
 
-const ReadTextUi = ({ view, onStateValue }: {
+const ReadTextUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readText">,
-    onStateValue: (value: View.FromType<"readText">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readText">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -62,7 +64,8 @@ const ReadTextUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Input
                 value={value || view.request.props.defaultValue || ""}
                 onChange={e => onStateValue(e.currentTarget.value)}
@@ -71,9 +74,10 @@ const ReadTextUi = ({ view, onStateValue }: {
     </FormControl>
 }
 
-const ReadNumberUi = ({ view, onStateValue }: {
+const ReadNumberUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readNumber">,
-    onStateValue: (value: View.FromType<"readNumber">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readNumber">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -82,7 +86,8 @@ const ReadNumberUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Input
                 value={internalValue}
                 onChange={e => {
@@ -96,9 +101,10 @@ const ReadNumberUi = ({ view, onStateValue }: {
     </FormControl>
 }
 
-const ReadDateUi = ({ view, onStateValue }: {
+const ReadDateUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readDate">,
-    onStateValue: (value: View.FromType<"readDate">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readDate">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -106,7 +112,8 @@ const ReadDateUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Datepicker
                 value={value || props.defaultValue}
                 onChange={(({ date }: { date: null | Date }) => {
@@ -117,9 +124,10 @@ const ReadDateUi = ({ view, onStateValue }: {
     </FormControl>
 }
 
-const ReadDateRangeUi = ({ view, onStateValue }: {
+const ReadDateRangeUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readDateRange">,
-    onStateValue: (value: View.FromType<"readDateRange">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readDateRange">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -128,7 +136,8 @@ const ReadDateRangeUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Datepicker
                 value={internalValue}
                 onChange={({ date }) => {
@@ -150,9 +159,10 @@ const ReadDateRangeUi = ({ view, onStateValue }: {
 }
 
 
-const ReadChoiceDropdownUi = ({ view, onStateValue }: {
+const ReadChoiceDropdownUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readChoiceDropdown">,
-    onStateValue: (value: View.FromType<"readChoiceDropdown">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readChoiceDropdown">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -166,7 +176,8 @@ const ReadChoiceDropdownUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Select
                 options={(props.options as any[]).map(option =>
                     ({
@@ -196,9 +207,10 @@ const ReadChoiceDropdownUi = ({ view, onStateValue }: {
 }
 
 
-const ReadChoiceListUi = ({ view, onStateValue }: {
+const ReadChoiceListUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readChoiceList">,
-    onStateValue: (value: View.FromType<"readChoiceList">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readChoiceList">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props, id }, state: { value, validity } } = view;
@@ -211,7 +223,8 @@ const ReadChoiceListUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : undefined}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             {!props.isMultiple
                 ? <RadioGroup
                     value={valueProvider(value || props.defaultValue)}
@@ -263,9 +276,10 @@ const ReadChoiceListUi = ({ view, onStateValue }: {
 
 const assertiveGet = (x: unknown, k: string) => (x as any)[k]
 
-const ReadStarRatingUi = ({ view, onStateValue }: {
+const ReadStarRatingUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readStarRating">,
-    onStateValue: (value: View.FromType<"readStarRating">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readStarRating">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -273,7 +287,8 @@ const ReadStarRatingUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <StarRating
                 value={value}
                 onChange={({ value }) => {
@@ -285,9 +300,10 @@ const ReadStarRatingUi = ({ view, onStateValue }: {
 }
 
 
-const ReadHappinessRatingUi = ({ view, onStateValue }: {
+const ReadHappinessRatingUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readHappinessRating">,
-    onStateValue: (value: View.FromType<"readHappinessRating">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readHappinessRating">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -295,7 +311,8 @@ const ReadHappinessRatingUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label + (props.guard?.checker(undefined) === false ? " *" : "")}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <EmoticonRating
                 value={value}
                 onChange={({ value }) => {
@@ -305,9 +322,10 @@ const ReadHappinessRatingUi = ({ view, onStateValue }: {
     </FormControl>
 }
 
-const ReadCheckboxUi = ({ view, onStateValue }: {
+const ReadCheckboxUi = ({ view, onStateValue, isDisabled }: {
     view: View.FromType<"readCheckbox">,
-    onStateValue: (value: View.FromType<"readCheckbox">["state"]["value"]) => void
+    onStateValue: (value: View.FromType<"readCheckbox">["state"]["value"]) => void,
+    isDisabled: boolean
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
@@ -315,7 +333,8 @@ const ReadCheckboxUi = ({ view, onStateValue }: {
     return <FormControl
         label={props.label}
         caption={props.helpText}
-        error={!validity.isValid && isDirty ? validity.reason : null}>
+        error={!validity.isValid && isDirty ? validity.reason : null}
+        disabled={isDisabled}>
             <Checkbox
                 checked={value || props.defaultValue}
                 onChange={e => onStateValue(e.currentTarget.checked)}

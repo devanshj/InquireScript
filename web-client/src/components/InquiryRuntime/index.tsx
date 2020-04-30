@@ -42,14 +42,23 @@ const InquiryRuntime = ({ main, onResponse, responseStatus }: {
 			theme.sizing.scale1200,
 			theme.sizing.scale1600
 		]}>
-			{execState.views.map(view =>
-				<ViewUi
-					view={view}
-					onStateValue={resultValue => isViewStateful(view) && onViewStateValue(view, resultValue)}
-					key={view.request.id} />
-			)}
+			{responseStatus !== "SUBMITTED" && <>
+				{execState.views.map(view =>
+					<ViewUi
+						view={view}
+						onStateValue={resultValue => isViewStateful(view) && onViewStateValue(view, resultValue)}
+						isDisabled={responseStatus === "SUBMITING"}
+						key={view.request.id} />
+				)}
+				<Block height={[
+					theme.sizing.scale1200,
+					theme.sizing.scale1200,
+					theme.sizing.scale1200,
+					theme.sizing.scale1600
+				]}/>
+			</>}
 			{execState.status === "COMPLETE" && execState.response !== undefined && <>
-				<Block height={theme.sizing.scale1600}/>
+				
 				{responseStatus === "UNSUBMITTED" || responseStatus === "SUBMITING" ?
 					<Button
 						onClick={() => {
@@ -87,7 +96,7 @@ export declare namespace View {
                         value: ResultValue<Ui[T]> | undefined,
                         validity:
                             | { isValid: true }
-                            | { isValid: false, reason: string }
+							| { isValid: false, reason: string }
                     } })
         }[keyof Ui]
 
