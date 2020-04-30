@@ -4,6 +4,7 @@ import { promises as fs } from "fs"
 import { toInquiryMain } from '../../code-transforms';
 import chokidar from "chokidar"
 import { cli } from 'cli-ux';
+import { waitForAnyKey } from '../../utils';
 
 export class InquiryDeploy extends Command {
 	static description = "deploy your script"
@@ -23,7 +24,7 @@ export class InquiryDeploy extends Command {
 		path = path || identifier + ".js"
 
 		initFirebase();
-		cli.action.start("checking for logged in users...")
+		cli.action.start("checking for logged in users")
 		let user = await getCurrentUser();
 		if (!user) {
 			cli.action.stop("None found")
@@ -65,7 +66,7 @@ export class InquiryDeploy extends Command {
 		cli.action.start("deploying")
 		await deploy();
 		cli.action.stop(`deployed to https://inquirescript.firebase.app/inquiry/${identifier}`)
-		this.log("watching for changes...")
+		cli.action.start("watching for changes")
 
 		let watcher = chokidar.watch(path)
 		.on("change", async () => {
@@ -74,7 +75,8 @@ export class InquiryDeploy extends Command {
 			cli.action.stop("deployed")
 		})
 
-		await cli.prompt("", { prompt: "press any key to stop watching...", required: false })
+		await waitForAnyKey("press any key to stop watching...\n");
+		cli.action.stop();
 		watcher.removeAllListeners();
 		this.exit();
 	}

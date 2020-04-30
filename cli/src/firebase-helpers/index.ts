@@ -64,13 +64,27 @@ export const putDocument = <P extends DocumentPath>(type: P["type"], props: P["p
         : "" // never
     ).set(document)
 
+export const getCollectionReference = <P extends CollectionPath>(type: P["type"], props: P["props"]) =>
+    firebase.firestore().collection(
+        type === "inquiry-responses"
+            ? `/inquiries/${props.inquiryId}/responses`
+        : "" // never
+    ) as firebase.firestore.CollectionReference<InquiryResponse>
+
 
 type DocumentPath =
     | InquiryPath
 
+type CollectionPath =
+    | InquiryResponsesPath
+
 type InquiryPath =
     & Brand<"InquiryPath", string>
     & { type: "inquiry", props: { inquiryId: InquiryId }, document: Inquiry }
+
+type InquiryResponsesPath =
+    & Brand<"InquiryResponsesPath", string>
+    & { type: "inquiry-responses", props: { inquiryId: InquiryId }, collection: InquiryResponse[] }
 
 type InquiryId =
     Brand<"InquiryId", string>
@@ -89,6 +103,11 @@ export type InquiryMain =
 
 export type InquiryUntranspiledCode =
     Brand<"InquiryUntranspiledCode", string>
+
+export type InquiryResponse = {
+    data: string[]
+}
+
 
 type Brand<N extends string, T> = T & { brand: N }
 
