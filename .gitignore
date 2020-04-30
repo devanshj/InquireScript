@@ -6,4 +6,4 @@ web-client/build
 web-client/src/secrets
 cloud-functions/lib
 cloud-functions/src/secrets
-
+.firebase

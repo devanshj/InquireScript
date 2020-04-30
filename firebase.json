@@ -8,7 +8,7 @@
 		"predeploy": "npm --prefix \"$RESOURCE_DIR\" run build"
 	},
 	"hosting": {
-		"public": "client/build",
+		"public": "web-client/build",
 		"ignore": [
 			"firebase.json",
 			"**/.*",
