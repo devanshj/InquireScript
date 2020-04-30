@@ -31,7 +31,7 @@ const reduceViews = (views, main) => new Promise(reduce => {
             }
         })
 
-        if (isValid && value !== undefined) {
+        if (isValid) {
             request.resolve(value)
         } else {
             request.reject("SUSPENDED");
