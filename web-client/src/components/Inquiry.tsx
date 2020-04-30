@@ -21,7 +21,7 @@ const Inquiry = () => {
                 setStatus("INQUIRY_NOT_FOUND")
                 return;
             } else {
-                setMain(() => new Function("return " + inquiry!.code)() as Main)
+                setMain(() => new Function("return " + inquiry!.main)() as Main)
             }
         })
         return () => {

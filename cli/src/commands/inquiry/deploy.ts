@@ -1,8 +1,9 @@
 import Command from "@oclif/command";
-import { initFirebase, getCurrentUser, getDocument, putDocument } from "../../firebase-helpers"
+import { initFirebase, getCurrentUser, getDocument, putDocument, InquiryUntranspiledCode } from "../../firebase-helpers"
 import { promises as fs } from "fs"
-import { toInquiryCode } from '../../code-transforms';
+import { toInquiryMain } from '../../code-transforms';
 import chokidar from "chokidar"
+import { cli } from 'cli-ux';
 
 export class InquiryDeploy extends Command {
 	static description = "deploy your script"
@@ -22,11 +23,17 @@ export class InquiryDeploy extends Command {
 		path = path || identifier + ".js"
 
 		initFirebase();
+		cli.action.start("checking for logged in users...")
 		let user = await getCurrentUser();
 		if (!user) {
-			this.log(`You're not logged in use "inquirescript login" to login`)
-			return;
+			cli.action.stop("None found")
+			await this.config.runCommand("login")
+			user = (await getCurrentUser({ noCheck: true }))!
+		} else {
+			cli.action.stop("Found")
 		}
+		
+		
 
 		if (!/[a-z0-9\-]/.test(identifier)) {
 			this.log(`identifier can only contain small case alphabets, digits and hyphens`)
@@ -45,22 +52,30 @@ export class InquiryDeploy extends Command {
 			return;
 		}
 
+		
 		const deploy = async () => {
+			let untranspiledCode = await fs.readFile(path, "utf8") as InquiryUntranspiledCode
 			await putDocument("inquiry", { inquiryId: identifier }, {
 				author: user!.uid,
-				code: await toInquiryCode(await fs.readFile(path, "utf8"))
+				main: await toInquiryMain(untranspiledCode),
+				untranspiledCode
 			})
-			
-			this.log("deployed")
 		}
 
+		cli.action.start("deploying")
 		await deploy();
+		cli.action.stop(`deployed to https://inquirescript.firebase.app/inquiry/${identifier}`)
 		this.log("watching for changes...")
 
-		chokidar.watch(path)
-		.on("change", () => {
-			this.log("change detected, deploying...")
-			deploy()
+		let watcher = chokidar.watch(path)
+		.on("change", async () => {
+			cli.action.start("change detected, deploying")
+			await deploy()
+			cli.action.stop("deployed")
 		})
+
+		await cli.prompt("", { prompt: "press any key to stop watching...", required: false })
+		watcher.removeAllListeners();
+		this.exit();
 	}
 }

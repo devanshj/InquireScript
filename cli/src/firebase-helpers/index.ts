@@ -6,13 +6,19 @@ import { KEYTAR_SERVICE, KEYTAR_ACCOUNT } from '../constants';
 import googleApiCredentials from "../secrets/googleApiCredentials.json"
 
 export const initFirebase = () => {
-    firebase.initializeApp(firebaseConfig)
+    if (firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig)
+    }
 }
 
 type GoogleAuthCredentials =
     Parameters<InstanceType<typeof google.auth.OAuth2>["setCredentials"]>[0]
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = async ({ noCheck = false }: { noCheck?: boolean } = { noCheck: false }) => {
+    if (noCheck) {
+        return firebase.auth().currentUser as Omit<firebase.User, "uid"> & { uid: AuthUid }
+    }
+
     try {
         let credentials = JSON.parse(await keytar.findPassword(KEYTAR_SERVICE) || "null")  as GoogleAuthCredentials | null
         if (!credentials) return null;
@@ -71,14 +77,18 @@ type InquiryId =
 
 export type Inquiry = {
     author: AuthUid,
-    code: InquiryCode
+    main: InquiryMain,
+    untranspiledCode: InquiryUntranspiledCode
 }
 
 export type AuthUid =
     Brand<"AuthUid", string>
 
-export type InquiryCode =
-    Brand<"InquiryCode", string>
+export type InquiryMain =
+    Brand<"InquiryMain", string>
+
+export type InquiryUntranspiledCode =
+    Brand<"InquiryUntranspiledCode", string>
 
 type Brand<N extends string, T> = T & { brand: N }
 

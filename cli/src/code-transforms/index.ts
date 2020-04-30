@@ -1,7 +1,7 @@
 import { types, traverse, parse } from "@babel/core"
-import { InquiryCode } from "../firebase-helpers"
+import { InquiryMain } from "../firebase-helpers"
 
-export const toInquiryCode = (code: string) => new Promise<InquiryCode>((resolve, reject) => {
+export const toInquiryMain = (code: string) => new Promise<InquiryMain>((resolve, reject) => {
     try {
         let ast = parse(code, { sourceType: "module" })!;
         traverse(ast, {
@@ -10,7 +10,7 @@ export const toInquiryCode = (code: string) => new Promise<InquiryCode>((resolve
                     let declaration = path.node.declaration
                     if (types.isFunctionDeclaration(declaration)) {
                         let { start, end } = declaration
-                        resolve(code.substring(start!, end!) as InquiryCode)
+                        resolve(code.substring(start!, end!) as InquiryMain)
                     } else if (types.isIdentifier(declaration)) {
                         let defaultIdentifier = declaration.name;
                         traverse(ast, {
@@ -18,7 +18,7 @@ export const toInquiryCode = (code: string) => new Promise<InquiryCode>((resolve
                                 if (path.node.name === defaultIdentifier) {
                                     let fn = path.parent
                                     if (types.isFunctionDeclaration(fn)) {
-                                        resolve(code.substring(fn.start!, fn.end!) as InquiryCode)
+                                        resolve(code.substring(fn.start!, fn.end!) as InquiryMain)
                                     }
                                 }
                             }
