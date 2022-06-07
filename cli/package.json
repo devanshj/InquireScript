@@ -1,7 +1,7 @@
 {
 	"name": "@inquirescript/cli",
 	"description": "InquireScript CLI",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"bin": {
 		"inquirescript": "./bin/run"
 	},
@@ -12,6 +12,7 @@
 		"@oclif/plugin-commands": "^1.2.3",
 		"@oclif/plugin-help": "^2.2.3",
 		"@types/babel__core": "^7.1.7",
+		"@types/keytar": "^4.4.2",
 		"chokidar": "3",
 		"cli-ux": "^5.4.5",
 		"firebase": "^7.14.2",
