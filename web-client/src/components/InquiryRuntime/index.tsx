@@ -7,7 +7,6 @@ import { useStyletron } from "baseui";
 import { Button } from "baseui/button"
 import { SIZE } from "baseui/input";
 import { LabelMedium } from "baseui/typography";
-import firebase from "firebase/app"
 
 const InquiryRuntime = ({ main, onResponse, responseStatus }: {
 	main: Main,

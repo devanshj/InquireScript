@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import InquiryRuntime from "./InquiryRuntime";
 import { Main } from "@inquirescript/runtime-types"
-import firebase from "firebase"
-import { HeadingSmall, LabelMedium, ParagraphMedium } from "baseui/typography";
+import firebase from "firebase/app"
+import { HeadingSmall, ParagraphMedium } from "baseui/typography";
 import { Block } from "baseui/block";
 
 const Inquiry = () => { 
@@ -14,8 +14,8 @@ const Inquiry = () => {
 
     useEffect(() => {
         let isUnsubscribed = false
-        let unsubscribe = firebase.firestore().doc(`/inquiries/${inquiryId}`).onSnapshot(async ref => {
-            let inquiry = await ref.data()
+        let unsubscribe = firebase.firestore().doc(`/inquiries/${inquiryId}`).onSnapshot(ref => {
+            let inquiry = ref.data()
             if (isUnsubscribed) return;
             if (!inquiry) {
                 setStatus("INQUIRY_NOT_FOUND")
