@@ -166,7 +166,8 @@ const ReadChoiceDropdownUi = ({ view, onStateValue, isDisabled }: {
 }) => {
     let [isDirty, setIsDirty] = useState(false);
     let { request: { props }, state: { value, validity } } = view;
-    let [internalValue, setInternalValue] = useState(value || props.defaultValue as any)
+    let [internalValue, setInternalValue] =
+      useState(value || props.defaultValue ? [props.defaultValue] : [] as any)
 
     let [valueProvider, labelProvider] =
         (props.options as any[]).every(o => typeof o === "string")
@@ -186,8 +187,10 @@ const ReadChoiceDropdownUi = ({ view, onStateValue, isDisabled }: {
                     })
                 )}
                 value={internalValue}
+                valueKey="id"
+                labelKey="label"
                 onChange={({ value: selectedOptions }) => {
-                    setInternalValue(value)
+                    setInternalValue(selectedOptions)
                     onStateValue(
                         props.isMultiple
                             ? selectedOptions.map(o =>
