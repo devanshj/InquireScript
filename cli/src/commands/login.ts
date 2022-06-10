@@ -4,6 +4,7 @@ import googleApiCredentials from "../secrets/googleApiCredentials.json"
 import {} from "googleapis/build/src/"
 import http from "http"
 import url from "url"
+import withStop from "stoppable"
 import { cli } from "cli-ux";
 import { initFirebase, getCurrentUser } from '../firebase-helpers';
 import keytar from "keytar";
@@ -30,13 +31,13 @@ export class Login extends Command {
 
         this.log("Opening Google's login page in your browser...");
         let authCode = await new Promise<string>(resolve => {
-            let server = http.createServer(async (req, res) => {
+            let server = withStop(http.createServer(async (req, res) => {
                 res.end(`
                   <div style="font-size: 1.2em; font-family: sans-serif; padding: 1em;">
                     You're now logged in, please return to the command line and close this tab.
                   </div>
                 `)
-                server.close()
+                server.stop()
                 resolve(
                     new url.URL(req.url!, "http://localhost:3000")
                     .searchParams.get("code")!
@@ -52,13 +53,12 @@ export class Login extends Command {
                         ]
                     })
                 )
-            )
+            ), 0)
         })
         let { tokens: credentials } = await authClient.getToken(authCode)
         await keytar.setPassword(KEYTAR_SERVICE, KEYTAR_ACCOUNT, JSON.stringify(credentials))
         
         user = (await getCurrentUser())!
         this.log(`Hi ${user.displayName}, you're now logged in!`)
-        process.exit()
     }
 }
